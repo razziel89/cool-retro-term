@@ -69,8 +69,8 @@ jobs:
     - name: Upload artefact for testing purposes
       uses: actions/upload-artifact@v3
       with:
-        name: Cool_Retro_Term-*-x86_64.AppImage
-        path: Cool_Retro_Term-x86_64.AppImage
+        name: Cool_Retro_Term-x86_64.AppImage
+        path: ./**/Cool_Retro_Term-*-x86_64.AppImage
 
     - name: Clean up
       if: always()
