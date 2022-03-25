@@ -41,7 +41,7 @@ jobs:
         make
 
     - name: Copy files for appimage
-      run:
+      run: |
         mkdir -p appdir/usr/share/metainfo appdir/usr/bin
         cp packaging/appdata/cool-retro-term.appdata.xml appdir/usr/share/metainfo/
         cp cool-retro-term appdir/usr/bin/
