@@ -1,0 +1,78 @@
+name: "ci"
+
+on:
+  push:
+    # TODO: enable only for main and filter for tags
+    # branches: main
+
+jobs:
+  appimage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install make
+        sudo apt-get install -y \
+        build-essential make wget libgl1-mesa-dev \
+        qmlscene qt5-qmake qt5-default qtdeclarative5-dev \
+        qml-module-qtquick-controls2 qml-module-qtgraphicaleffects \
+        qml-module-qtquick-dialogs qml-module-qtquick-localstorage \
+        qml-module-qtquick-window2 qml-module-qt-labs-settings \
+        qml-module-qt-labs-folderlistmodel qtquickcontrols2-5-dev \
+        qml-module-qt-labs-platform qml-module-qtquick-controls \
+        qml-module-qtquick-layouts qml-module-qtquick-localstorage
+
+    - name: Download QT appimage builder
+      run: |
+        wget -c -O linuxdeployqt.AppImage \
+        https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
+        chmod a+x linuxdeployqt.AppImage 
+
+    - name: Build project
+      run: |
+        qmake CONFIG+=release PREFIX=/usr
+        make -j$(nproc)
+
+    - name: Copy files for appimage
+      run:
+        mkdir -p appdir/usr/share/metainfo appdir/usr/bin
+        cp packaging/appdata/cool-retro-term.appdata.xml appdir/usr/share/metainfo/
+        cp cool-retro-term appdir/usr/bin/
+        cp ./cool-retro-term.desktop appdir/
+        cp ./app/icons/128x128/cool-retro-term.png appdir/
+        cp -r ./app/qml appdir/usr/
+        # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
+        cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
+
+    - name: Extract version number
+      run: |
+        # Extract version for linuxdeployqt to name the file.
+        echo "::set-env name=VERSION::$(git rev-parse --short HEAD)"
+
+    - name: Build appimage
+      run: |
+        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -qmldir=./app/qml/ -qmldir=./qmltermwidget/ # -verbose=3 2>&1 | grep "path:" -C 3
+        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -qmldir=./app/qml/ -qmldir=./qmltermwidget/ -verbose=2 -appimage
+      env:
+        # Unset environment variables
+        QTDIR:
+        QT_PLUGIN_PATH:
+        LD_LIBRARY_PATH:
+
+    - name: Clean up
+      if: always()
+      run: |
+        rm -r appdir
+        # TODO: determine purpose of next line
+        find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+        # curl --upload-file Cool*.AppImage https://transfer.sh/Cool_Retro_Term-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+        # wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+        # TODO: consider using https://github.com/actions/upload-artifact action
+        # bash upload.sh Cool*.AppImage*
