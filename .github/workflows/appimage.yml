@@ -38,7 +38,7 @@ jobs:
     - name: Build project
       run: |
         qmake CONFIG+=release PREFIX=/usr
-        make -j$(nproc)
+        make
 
     - name: Copy files for appimage
       run:
