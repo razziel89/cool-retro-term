@@ -54,7 +54,7 @@ jobs:
     - name: Extract version number
       run: |
         # Extract version for linuxdeployqt to name the file.
-        echo "::set-env name=VERSION::$(git rev-parse --short HEAD)"
+        echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
     - name: Build appimage
       run: |
