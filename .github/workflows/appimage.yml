@@ -41,16 +41,12 @@ jobs:
         qmake CONFIG+=release PREFIX=/usr
         make -j$(nproc)
 
-    - name: Copy files for appimage
+    - name: Install to appdir
       run: |
-        mkdir -p appdir/usr/share/metainfo appdir/usr/bin
-        cp packaging/appdata/cool-retro-term.appdata.xml appdir/usr/share/metainfo/
-        cp cool-retro-term appdir/usr/bin/
-        cp ./cool-retro-term.desktop appdir/
-        cp ./app/icons/128x128/cool-retro-term.png appdir/
-        cp -r ./app/qml appdir/usr/
-        # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
-        cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
+        make INSTALL_ROOT=appdir -j$(nproc) install
+        find appdir | sort
+        # # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
+        # cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
 
     - name: Extract version number
       run: |
@@ -59,8 +55,7 @@ jobs:
 
     - name: Build appimage
       run: |
-        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -qmldir=./app/qml/ -qmldir=./qmltermwidget/ # -verbose=3 2>&1 | grep "path:" -C 3
-        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -qmldir=./app/qml/ -qmldir=./qmltermwidget/ -verbose=2 -appimage
+        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -verbose=2 -appimage
 #      env:
 #        # Unset environment variables
 #        QTDIR:
