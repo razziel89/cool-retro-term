@@ -67,25 +67,25 @@ jobs:
         cp cool-retro-term.desktop appdir/usr/share/applications/
         cp packaging/appdata/cool-retro-term.appdata.xml appdir/usr/share/metainfo/
         cp app/icons/128x128/cool-retro-term.png appdir/usr/share/icons/hicolor/128x128/apps/
+        cp -r ./app/qml appdir/usr/
+        # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
+        cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
 
-        # cp -r ./app/qml appdir/usr/
-        # # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
-        # cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
         find appdir | sort
 
     - name: Build appimage
       run: |
         source /opt/qt*/bin/qt*-env.sh && \
         ./linuxdeployqt.AppImage appdir/usr/share/applications/cool-retro-term.desktop \
-        -verbose=2 -appimage \
+        -verbose=1 -appimage \
         -extra-plugins=iconengines,platformthemes/libqgtk3.so \
-        -qmlimport=$(pwd)/app/qml \
-        -qmlimport=$(pwd)/qmltermwidget
-#      env:
-#        # Unset environment variables
-#        QTDIR:
-#        QT_PLUGIN_PATH:
-#        LD_LIBRARY_PATH:
+        -qmldir=./app/qml/ \
+        -qmldir=./qmltermwidget/
+      env:
+        # Unset environment variables
+        QTDIR:
+        QT_PLUGIN_PATH:
+        LD_LIBRARY_PATH:
 
     - name: Upload artefact for testing purposes
       uses: actions/upload-artifact@v3
@@ -97,7 +97,7 @@ jobs:
       if: always()
       run: |
         make clean
-        rm -r appdir
+        rm -rf appdir
         # TODO: determine purpose of next line
         find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
         # curl --upload-file Cool*.AppImage https://transfer.sh/Cool_Retro_Term-git.$(git rev-parse --short HEAD)-x86_64.AppImage
