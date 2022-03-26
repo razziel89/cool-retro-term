@@ -33,8 +33,8 @@ jobs:
     - name: Download QT appimage builder
       run: |
         wget -c -O linuxdeployqt.AppImage \
-        https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage 
-        chmod a+x linuxdeployqt.AppImage 
+        https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+        chmod a+x linuxdeployqt.AppImage
 
     - name: Build project
       run: |
@@ -55,6 +55,22 @@ jobs:
 
     - name: Build appimage
       run: |
+        mkdir -p \
+        appdir/usr/bin \
+        appdir/usr/lib \
+        appdir/usr/share/applications \
+        appdir/usr/share/metainfo \
+        appdir/usr/share/icons/hicolor/128x128/apps
+
+        cp cool-retro-term appdir/usr/bin/
+        cp cool-retro-term.desktop appdir/usr/share/applications/
+        cp packaging/appdata/cool-retro-term.appdata.xml appdir/usr/share/metainfo/
+        cp app/icons/128x128/cool-retro-term.png appdir/usr/share/icons/hicolor/128x128/apps/
+
+        # cp -r ./app/qml appdir/usr/
+        # # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
+        # cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
+
         ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -verbose=2 -appimage
 #      env:
 #        # Unset environment variables
@@ -71,6 +87,7 @@ jobs:
     - name: Clean up
       if: always()
       run: |
+        make clean
         rm -r appdir
         # TODO: determine purpose of next line
         find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
