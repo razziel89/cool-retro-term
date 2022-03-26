@@ -96,10 +96,10 @@ jobs:
     - name: Clean up
       if: always()
       run: |
+        find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
         make clean
         rm -rf appdir
         # TODO: determine purpose of next line
-        find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
         # curl --upload-file Cool*.AppImage https://transfer.sh/Cool_Retro_Term-git.$(git rev-parse --short HEAD)-x86_64.AppImage
         # wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
         # TODO: consider using https://github.com/actions/upload-artifact action
