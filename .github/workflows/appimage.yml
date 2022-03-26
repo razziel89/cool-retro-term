@@ -38,6 +38,7 @@ jobs:
 
     - name: Build project
       run: |
+        qmake -v
         qmake CONFIG+=release PREFIX=/usr
         make -j$(nproc)
 
@@ -53,7 +54,7 @@ jobs:
         # Extract version for linuxdeployqt to name the file.
         echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-    - name: Build appimage
+    - name: Build appimage directory
       run: |
         mkdir -p \
         appdir/usr/bin \
@@ -71,7 +72,13 @@ jobs:
         # # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
         # cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
 
-        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term -verbose=2 -appimage
+    - name: Build appimage
+      run: |
+        ./linuxdeployqt.AppImage appdir/usr/bin/cool-retro-term \
+        -verbose=2 -appimage \
+        -extra-plugins=iconengines,platformthemes/libqgtk3.so \
+        -qmlimport=$(pwd)/app/qml \
+        -qmlimport=$(pwd)/qmltermwidget
 #      env:
 #        # Unset environment variables
 #        QTDIR:
