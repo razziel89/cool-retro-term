@@ -1,9 +1,8 @@
 name: "ci"
 
 on:
-  push:
-    # TODO: enable only for main and filter for tags
-    # branches: main
+  push: tags
+  workflow_dispatch:
 
 defaults:
   run:
@@ -23,7 +22,6 @@ jobs:
       run: |
         sudo add-apt-repository -y ppa:beineri/opt-qt-5.15.2-bionic
         sudo apt-get update -qq
-        sudo apt-get install make
         sudo apt-get install -y \
         build-essential make wget libgl1-mesa-dev \
         qt515declarative qt515graphicaleffects \
@@ -46,8 +44,6 @@ jobs:
       run: |
         source /opt/qt*/bin/qt*-env.sh && \
         make INSTALL_ROOT=appdir -j$(nproc) install
-        # # Workaround for https://github.com/probonopd/linuxdeployqt/issues/78
-        # cp -r ./qmltermwidget/QMLTermWidget appdir/usr/qml/
 
     - name: Extract version number
       run: |
@@ -78,7 +74,6 @@ jobs:
         source /opt/qt*/bin/qt*-env.sh && \
         ./linuxdeployqt.AppImage appdir/usr/share/applications/cool-retro-term.desktop \
         -verbose=1 -appimage \
-        -extra-plugins=iconengines,platformthemes/libqgtk3.so \
         -qmldir=./app/qml/ \
         -qmldir=./qmltermwidget/
       env:
@@ -87,11 +82,19 @@ jobs:
         QT_PLUGIN_PATH:
         LD_LIBRARY_PATH:
 
-    - name: Upload artefact for testing purposes
+    - name: Upload artifact for testing purposes
       uses: actions/upload-artifact@v3
       with:
         name: Cool_Retro_Term-x86_64.AppImage
         path: ./**/Cool_Retro_Term-*-x86_64.AppImage
+
+    - name: Upload release
+      uses: softprops/action-gh-release@v1
+      permissions:
+        contents: write
+      with:
+        body: appimage release
+        files: ./**/Cool_Retro_Term-*-x86_64.AppImage
 
     - name: Clean up
       if: always()
