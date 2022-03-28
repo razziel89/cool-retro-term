@@ -5,6 +5,9 @@ on:
     tags: "**"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 defaults:
   run:
     shell: bash
@@ -91,8 +94,6 @@ jobs:
 
     - name: Upload release
       uses: softprops/action-gh-release@v1
-      permissions:
-        contents: write
       with:
         body: appimage release
         files: ./**/Cool_Retro_Term-*-x86_64.AppImage
