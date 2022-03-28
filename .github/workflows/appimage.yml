@@ -51,8 +51,9 @@ jobs:
 
     - name: Extract version number
       run: |
-        # Extract version for linuxdeployqt to name the file.
-        echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        # Extract version for linuxdeployqt to name the file. Use the tag as
+        # release name.
+        echo "VERSION=${{ github.ref }}" >> $GITHUB_ENV
 
     - name: Build appimage directory
       run: |
@@ -86,12 +87,6 @@ jobs:
         QT_PLUGIN_PATH:
         LD_LIBRARY_PATH:
 
-    - name: Upload artifact for testing purposes
-      uses: actions/upload-artifact@v3
-      with:
-        name: Cool_Retro_Term-x86_64.AppImage
-        path: ./**/Cool_Retro_Term-*-x86_64.AppImage
-
     - name: Upload release
       uses: softprops/action-gh-release@v1
       with:
@@ -104,8 +99,3 @@ jobs:
         find appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
         make clean
         rm -rf appdir
-        # TODO: determine purpose of next line
-        # curl --upload-file Cool*.AppImage https://transfer.sh/Cool_Retro_Term-git.$(git rev-parse --short HEAD)-x86_64.AppImage
-        # wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-        # TODO: consider using https://github.com/actions/upload-artifact action
-        # bash upload.sh Cool*.AppImage*
