@@ -52,8 +52,8 @@ jobs:
     - name: Extract version number
       run: |
         # Extract version for linuxdeployqt to name the file. Use the tag as
-        # release name.
-        echo "VERSION=${{ github.ref }}" >> $GITHUB_ENV
+        # release name but remove prefix.
+        echo "VERSION=$(echo '${{ github.ref }}' | sed 's;.*/;;')" >> $GITHUB_ENV
 
     - name: Build appimage directory
       run: |
