@@ -71,6 +71,11 @@ jobs:
 
         find appdir | sort
 
+    - name: Do not catch Ctrl-H
+      run: |
+        sed -i 's/key Backspace -Control : .*$/key Backspace -Control : "\\x7f"/' \
+        qmltermwidget/lib/kb-layouts/default.keytab
+
     - name: Build appimage
       run: |
         source /opt/qt*/bin/qt*-env.sh && \
