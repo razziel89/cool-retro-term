@@ -73,8 +73,8 @@ jobs:
 
     - name: Do not catch Ctrl-H
       run: |
-        sed -i 's/key Backspace -Control : .*$/key Backspace -Control : "\\x7f"/' \
-        qmltermwidget/lib/kb-layouts/default.keytab qmltermwidget/QMLTermWidget/kb-layouts/default.keytab
+        find appdir -name default.keytab -exec sed -i \
+        's/key Backspace -Control : .*$/key Backspace -Control : "\\x7f"/' {} +
 
     - name: Build appimage
       run: |
